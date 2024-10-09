@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h1>Table of all the users avaiable</h1>
+		<div id="statusBar"></div>
+		<a href="/librain/user/add">Add user</a>
+		<br />
+		<br />
+		<a href="/librain">libran home page</a>
+		<br />
+		<br />
+		<a href="/librain/user">normal user page</a>
+		<br />
+		<br />
+		<table border="1" id="usersTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Username</th>
+					<th>Active</th>
+					<th>Deleted By</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/librain/user/all", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((users) => {
+				const tableBody = document.querySelector("#usersTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+
+				// Loop through the array of books
+				users.forEach((user) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					// Create and append table cells (td) for each data field
+					const idCell = document.createElement("td");
+					idCell.textContent = user.id;
+					row.appendChild(idCell);
+
+					const usernameCell = document.createElement("td");
+					usernameCell.textContent = user.username;
+					row.appendChild(usernameCell);
+
+					const activeCell = document.createElement("td");
+					activeCell.textContent = user.isActive;
+					row.appendChild(activeCell);
+
+					const deletedBy = document.createElement("td");
+					deletedBy.textContent =
+						user.deletedBy == 0 ? "self" : `librain ${user.deletedBy}`;
+					row.appendChild(deletedBy);
+
+					tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>

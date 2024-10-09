@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<div><h1>borrow history</h1></div>
+		<br />
+		<a href="/user/borrow">see all the avalable books in library</a>
+		<br />
+		<br />
+        <a href="/user/history">see history of borrowed books</a>
+		<br />
+		<br />
+        <a href="/user/delete">delete account</a>
+		<br />
+		<br />
+		<h3>Table of all the borrow history</h3>
+		<div id="statusBar"></div>
+		<table border="1" id="borrowedTable">
+			<thead>
+				<tr>
+                    <th>id</th>
+					<th>book ID</th>
+					<th>status</th>
+                    <th>timestamp</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/user/book/history", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((books) => {
+				const tableBody = document.querySelector("#borrowedTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+                console.log(books);
+				// Loop through the array of books
+				books.forEach((book) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					const idCell = document.createElement("td");
+					idCell.textContent = book.id;
+					row.appendChild(idCell);
+
+					const bookIdCell = document.createElement("td");
+					bookIdCell.textContent = book.bookId;
+					row.appendChild(bookIdCell);
+
+					const isAvalableCell = document.createElement("td");
+					isAvalableCell.textContent = book.isAvalable;
+					row.appendChild(isAvalableCell);
+                    
+                    const timestampCell = document.createElement("td");
+					timestampCell.textContent = book.timestamp;
+					row.appendChild(timestampCell);
+
+					tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>

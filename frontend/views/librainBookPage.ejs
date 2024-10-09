@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h1>Table of all the books avaiable</h1>
+		<div id="statusBar"></div>
+		<a href="/librain/book/add">Add book</a>
+        <br />
+		<br />
+		<a href="/librain">libran home page</a>
+        <br />
+		<br />
+		<table border="1" id="booksTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Author</th>
+					<th>Title</th>
+					<th>Is Available</th>
+					<th>edit</th>
+					<th>delete</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/librain/book", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((books) => {
+				const tableBody = document.querySelector("#booksTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+
+				// Loop through the array of books
+				books.forEach((book) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					// Create and append table cells (td) for each data field
+					const idCell = document.createElement("td");
+					idCell.textContent = book.id;
+					row.appendChild(idCell);
+
+					const authorCell = document.createElement("td");
+					authorCell.textContent = book.author;
+					row.appendChild(authorCell);
+
+					const titleCell = document.createElement("td");
+					titleCell.textContent = book.title;
+					row.appendChild(titleCell);
+
+					const availableCell = document.createElement("td");
+					availableCell.textContent = book.isAvalable == "yes" ? "Yes" : "No";
+					row.appendChild(availableCell);
+
+                    const editCell = document.createElement("td");
+					editCell.innerHTML = `<a href=/librain/book/edit/${book.id}>Edit</a>`;
+					row.appendChild(editCell);
+					
+                    const deleteCell = document.createElement("td");
+					deleteCell.innerHTML = `<a href=/librain/book/delete/${book.id}>Delete</a>`;
+					row.appendChild(deleteCell);
+
+                    tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>

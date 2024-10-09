@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h3>you are editing user <%= id%></h3>
+		<div id="statusBar"></div>
+		<form id="myForm">
+			<label for="username">username:</label>
+			<input type="text" id="username" name="username" required />
+
+			<label for="password">password:</label>
+			<input type="password" id="password" name="password" required />    
+
+			<input type="submit" value="submit" id="submitButton" />
+		</form>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		const pathname = window.location.pathname;
+		const statusBar = document.getElementById("statusBar");
+		// console.log(pathname);
+		const id = pathname.split("/")[4];
+		fetch(backendUrl + `/librain/user/${id}`, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((res) => {
+                console.log(res);
+				const inputUsernameField = document.getElementById("username");
+                inputUsernameField.value=res.username;
+			})
+			.catch((err) => {
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+
+		document
+			.getElementById("myForm")
+			.addEventListener("submit", function (event) {
+				event.preventDefault();
+				const submitButton = document.getElementById("submitButton");
+				submitButton.disabled = true;
+				const formData = new FormData(this);
+				const data = {
+					username: formData.get("username"),
+					password: formData.get("password"),
+				};
+
+				statusBar.innerHTML = "request is on its way";
+
+				fetch(backendUrl + `/librain/user/${id}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${storageToken}`,
+					},
+					body: JSON.stringify(data),
+				})
+					.then((res) => {
+						if (!res.ok) {
+							const err = new Error();
+							err.message = res.body.message || "something went wrong";
+							err.status = res.status;
+							throw err;
+						}
+						window.location.href = "/librain/user";
+					})
+					.catch((err) => {
+						statusBar.innerHTML = `${err.status} ${err.message}`;
+					});
+			});
+	</script>
+</html>

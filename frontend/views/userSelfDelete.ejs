@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h4>
+			Are you sure you want deactivate this account this action cant be
+			undone???
+		</h4>
+        <div>Return is only possible when you have returned all borrowed books</div>
+		<div id="statusBar"></div>
+		<button onclick="deleteRequest()" id="submitButton">delete</button>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+
+		function deleteRequest() {
+			const submitButton = document.getElementById("submitButton");
+			submitButton.disabled = true;
+			const statusBar = document.getElementById("statusBar");
+			statusBar.innerHTML = "request is on its way";
+			fetch(backendUrl + `/user`, {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${storageToken}`,
+				},
+			})
+				.then((res) => {
+					if (!res.ok) {
+						const err = new Error();
+						err.message = res.body.message || "something went wrong";
+						err.status = res.status;
+						throw err;
+					}
+                    window.localStorage.removeItem("token");
+					window.location.href = "/";
+				})
+				.catch((err) => {
+					statusBar.innerHTML = `${err.status} ${err.message}`;
+				});
+		}
+	</script>
+</html>

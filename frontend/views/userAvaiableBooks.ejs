@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<div><h1>Hello User</h1></div>
+		<br />
+        <a href="/user">see all the borrowed books</a>
+		<br />
+		<br />
+		<br />
+        <h3>Table of all the avalibe in library</h3>
+        <div id="statusBar"></div>
+		<table border="1" id="borrowedTable">
+			<thead>
+				<tr>
+					<th>book ID</th>
+					<th>title</th>
+					<th>author</th>
+					<th>Borrow</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/user/book/available", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((books) => {
+				const tableBody = document.querySelector("#borrowedTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+
+				// Loop through the array of books
+				books.forEach((book) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					const idCell = document.createElement("td");
+					idCell.textContent = book.id;
+					row.appendChild(idCell);
+
+					const titleCell = document.createElement("td");
+					titleCell.textContent = book.title;
+					row.appendChild(titleCell);
+
+                    const authorCell = document.createElement("td");
+					authorCell.textContent = book.author;
+					row.appendChild(authorCell);
+
+                    const borrowCell = document.createElement("td");
+					borrowCell.innerHTML = `<a href=/user/borrow/${book.id}>borrow</a>`;
+					row.appendChild(borrowCell);
+
+					tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>

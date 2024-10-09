@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h1>Table of all history of all the book transation</h1>
+		<div id="statusBar"></div>
+		<a href="/librain">libran home page</a>
+        <br />
+		<br />
+		<table border="1" id="historyTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>status</th>
+					<th>userId</th>
+					<th>bookId</th>
+                    <th>timestamp</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/librain/history", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((historys) => {
+				const tableBody = document.querySelector("#historyTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+
+				// Loop through the array of books
+				historys.forEach((history) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					// Create and append table cells (td) for each data field
+					const idCell = document.createElement("td");
+					idCell.textContent = history.id;
+					row.appendChild(idCell);
+
+					const statusCell = document.createElement("td");
+					statusCell.textContent = history.isAvalable;
+					row.appendChild(statusCell);
+
+					const userIdCell = document.createElement("td");
+					userIdCell.textContent = history.userId;
+					row.appendChild(userIdCell);
+
+					const bookIdCell = document.createElement("td");
+					bookIdCell.textContent = history.bookId;
+					row.appendChild(bookIdCell);
+
+                    const timestampCell = document.createElement("td");
+					timestampCell.textContent = history.timestamp;
+					row.appendChild(timestampCell);
+
+					tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>

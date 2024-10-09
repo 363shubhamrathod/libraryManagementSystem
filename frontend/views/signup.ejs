@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h2>Signup</h2>
+		<div id="statusBar"></div>
+		<form id="myForm">
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username" required />
+
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required />
+
+			<label>Role:</label>
+			<label for="user">
+				<input type="radio" id="user" name="role" value="User" required />
+				User
+			</label>
+			<label for="librarian">
+				<input
+					type="radio"
+					id="librarian"
+					name="role"
+					value="Librain"
+					required
+				/>
+				Librarian
+			</label>
+
+			<input type="submit" value="Login" id="submitButton" />
+		</form>
+		<a href="/login">dont have account login</a>
+	</body>
+	<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+	<script>
+		const backendUrl = "<%=backend%>";
+		const storageToken = window.localStorage.getItem("token");
+		console.log(storageToken);
+		if (window.localStorage.getItem("token")) {
+			const storageDecoded = jwt_decode(storageToken);
+			if (storageDecoded.role == "User") {
+				window.location.href = "/user";
+			} else if (storageDecoded.role == "Librain") {
+				window.location.href = "/librain";
+			} else {
+				window.location.href = "/";
+			}
+		}
+		document
+			.getElementById("myForm")
+			.addEventListener("submit", function (event) {
+				event.preventDefault();
+				const submitButton = document.getElementById("submitButton");
+				submitButton.disabled = true;
+				const formData = new FormData(this);
+				const data = {
+					username: formData.get("username"),
+					password: formData.get("password"),
+					role: formData.get("role"),
+				};
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = "request is on its way";
+				fetch(backendUrl + "/signup", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(data),
+				})
+					.then((res) => {
+						if (!res.ok) {
+							const err = new Error();
+							err.message = res.body.message || "something went wrong";
+							err.status = res.status;
+							throw err;
+						}
+						window.location.href = "/login";
+					})
+					.catch((err) => {
+						statusBar.innerHTML = `${err.status} ${err.message}`;
+					});
+			});
+	</script>
+</html>

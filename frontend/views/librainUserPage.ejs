@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h1>Table of all the users avaiable</h1>
+		<div id="statusBar"></div>
+		<br />
+		<br />
+		<a href="/librain/user/add">Add user</a>
+		<br />
+		<br />
+		<a href="/librain">libran home page</a>
+		<br />
+		<br />
+		<a href="/librain/user/all">view all user active and disactive</a>
+		<br />
+		<br />
+		<table border="1" id="usersTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Username</th>
+					<th>edit</th>
+					<th>delete</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</body>
+	<script>
+		const backendUrl = "<%=backend%>";
+		let storageToken = window.localStorage.getItem("token");
+		if (!window.localStorage.getItem("token")) {
+			window.location.href = "/";
+		}
+		storageToken = JSON.parse(storageToken);
+		fetch(backendUrl + "/librain/user", {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${storageToken}`,
+			},
+		})
+			.then((res) => res.json())
+			.then((users) => {
+				const tableBody = document.querySelector("#usersTable tbody");
+				// Clear any existing rows
+				tableBody.innerHTML = "";
+
+				// Loop through the array of books
+				users.forEach((user) => {
+					// Create a new row
+					const row = document.createElement("tr");
+
+					// Create and append table cells (td) for each data field
+					const idCell = document.createElement("td");
+					idCell.textContent = user.id;
+					row.appendChild(idCell);
+
+					const usernameCell = document.createElement("td");
+					usernameCell.textContent = user.username;
+					row.appendChild(usernameCell);
+
+					const editCell = document.createElement("td");
+					editCell.innerHTML = `<a href=/librain/user/edit/${user.id}>Edit</a>`;
+					row.appendChild(editCell);
+
+					const deleteCell = document.createElement("td");
+					deleteCell.innerHTML = `<a href=/librain/user/delete/${user.id}>Delete</a>`;
+					row.appendChild(deleteCell);
+
+					tableBody.appendChild(row);
+				});
+			})
+			.catch((err) => {
+				const statusBar = document.getElementById("statusBar");
+				statusBar.innerHTML = `${err.status} ${err.message}`;
+			});
+	</script>
+</html>
